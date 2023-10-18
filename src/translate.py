@@ -1,4 +1,3 @@
-import enum
 import re
 
 
@@ -56,10 +55,8 @@ def handle_intialize(line: str) -> str:
     Returns:
         str
     """
-    translation = ""
 
     words = line.split()
-
     return f"Se inicializa el variable {words[1]}"
 
 
@@ -72,14 +69,43 @@ def handle_set(line: str) -> str:
     Returns:
         str
     """
-    translate = ""
     
+    translate = ""
     words = line.split()
     translate = f"Se activa el switch {words[1]}"
-
-    #print("print ::", translate)
-
     return translate
+
+
+def handle_add(line: str) -> str:
+    """ADD translation on CALL line
+
+    Args:
+        line (str)
+
+    Returns:
+        str
+    """
+
+    words = line.split()
+    return f"Se añade {words[1]} al índice {words[3]}"
+
+
+def handle_read(line: str) -> str:
+    """read translation on CALL line
+
+    Args:
+        line (str)
+
+    Returns:
+        str
+    """
+    
+    words = line.split('INTO')
+    if len(words):
+        temp = words[0].split(' ', 1)
+        if len(temp):
+            return f"Se lee el fichero de entrada {temp[1].strip().lstrip()} con la copy {words[1].strip().lstrip()}"
+    return ""
 
 
 def handle_open(line: str) -> str:
@@ -95,21 +121,6 @@ def handle_open(line: str) -> str:
     return ""
 
 
-def handle_add(line: str) -> str:
-    """ADD translation on CALL line
-
-    Args:
-        line (str)
-
-    Returns:
-        str
-    """
-    translation = ""
-
-    words = line.split()
-    return f"Se añade {words[1]} al índice {words[3]}"
-
-
 def handle_compute(line: str) -> str:
     """ADD translation on CALL line
 
@@ -121,55 +132,6 @@ def handle_compute(line: str) -> str:
     """
 
     return ""
-
-
-def handle_read(line: str) -> str:
-    """read translation on CALL line
-
-    Args:
-        line (str)
-
-    Returns:
-        str
-    """
-    words = line.split('INTO')
-    if len(words):
-        temp = words[0].split(' ', 1)
-        if len(temp):
-            return  f"Se lee el fichero de entrada {temp[1].strip().lstrip()} con la copy {words[1].strip().lstrip()}"
-    return  ""
-
-
-def handle_if(doc, line: str) -> str:
-    """if translation on CALL line
-
-    Args:
-        line (str)
-
-    Returns:
-        str
-    """
-   
-    
-    words = line.split()
-    
-    print(words)
-    for word in words:
-            tmp = word.split('-')
-            
-            print(word)
-            if word ==str('EQUAL') :
-               print('ok')
-               if len(words):
-                return  f"Si el campo de retorno {words[1].strip().lstrip()} no es igual a cero"
-               
-            elif tmp[0]==str('NO'):
-                print('okay')
-                if len(tmp):
-                 return  f"Si {words[1].strip().lstrip()} {handle_perform(line)} "
-                
-            handle_move(doc,line=line)                                                                                  
-    return  ""
 
 
 def handle_into(line: str) -> str:
@@ -184,7 +146,8 @@ def handle_into(line: str) -> str:
 
     return ""
 
-def handle_move(doc, line: str) -> str:
+
+def handle_if(doc, line: str) -> str:
     """if translation on CALL line
 
     Args:
@@ -193,6 +156,52 @@ def handle_move(doc, line: str) -> str:
     Returns:
         str
     """
+    
+    words = line.split("<br />")
+    temp = ''
+    
+    for word in words:
+        tmp = word.split()
+        # --------------------- Handle IF line
+        if 'ELSE' in word:
+            pass
+        elif 'NOT EQUAL' in word:
+            if len(tmp):
+                doc.add_unordered_list(f"Si el campo de retorno {tmp[1].strip().lstrip()} no es igual a cero")
+        elif 'EQUAL' in word:
+            if len(tmp):
+                doc.add_unordered_list(f"Si el campo de retorno {tmp[1].strip().lstrip()} no es igual a cero")
+        elif 'NO-' in word:
+            if len(tmp):
+                temp = tmp[1].strip().lstrip()
+                
+        # --------------------- Handle other lines
+        translation = ''
+        if "PERFORM" in word:
+            translation = f"Si {temp} {handle_perform(line=word)}" if handle_perform(line=word) != "" else ''
+        elif "MOVE" in word:
+            handle_move(doc=doc, line=word)
+        elif "INITIALIZE" in word:
+            translation = f"Si {temp} {handle_intialize(line=word)}" if handle_intialize(line=word) != "" else ''
+            
+            
+        if translation != "":
+            print(translation)
+            doc.add_unordered_list(translation)
+            
+    return ""
+
+
+def handle_move(doc, line: str) -> str:
+    """if translation on MOVE line
+
+    Args:
+        line (str)
+
+    Returns:
+        str
+    """
+    
     moves = line.split("<br />")
     non_breaking_space_pattern = re.compile(r'\xa0')
     empty_line_pattern = re.compile(r'^\s*$')
@@ -209,12 +218,13 @@ def handle_move(doc, line: str) -> str:
         if match:
             org = match.group(1).strip()
             des = match.group(2).strip()
-            tp = [org,des]
+            tp = [org, des]
             tmp.append(tp)
     doc.add_unordered_list(f"Se informan los siguientes campos:")
-    doc.add_table(tmp,rows=len(tmp),cols=2)
+    doc.add_table(tmp, rows=len(tmp), cols=2)
     return ""
-    
+
+
 def translate(doc, word: str, line: str = ""):
     """Perform translations on line
 
@@ -226,6 +236,7 @@ def translate(doc, word: str, line: str = ""):
     Returns:
         str
     """
+    
     translation = ""
 
     if "PERFORM" == word:
@@ -244,10 +255,8 @@ def translate(doc, word: str, line: str = ""):
         translation = handle_compute(line=line)
     elif "READ" == word:
         translation = handle_read(line=line)
-        
     elif "IF" == word:
-        translation = handle_if(doc,line=line)
-        print(translation)
+        handle_if(doc, line=line)
     elif "MOVE" == word:
         handle_move(doc, line=line)
 

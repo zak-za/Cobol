@@ -2,6 +2,7 @@
 
 import time
 import docx
+import os
 
 
 class Document:
@@ -14,9 +15,11 @@ class Document:
         """save document to output"""
 
         if name != "":
-            self.doc.save(f"out/{name}.docx")
+            os.path.join(os.getcwd(), f'/out/{name}.docx')
+            self.doc.save(os.path.join(os.getcwd(), f'out/{name}.docx'))
         else:
-            self.doc.save(f"out/out_{time.strftime('%Y%m%d_%H%M%S')}.docx")
+            self.doc.save(os.path.join(
+                os.getcwd(), f'out/out_{time.strftime("%Y%m%d_%H%M%S")}.docx'))
 
     def add_heading(self, header: str = "", level: int = 1):
         """add heading to document

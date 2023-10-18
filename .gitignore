@@ -8,3 +8,4 @@ log.log
 out/*
 in/*
 !in/test.txt
+.vs

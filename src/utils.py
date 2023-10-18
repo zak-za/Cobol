@@ -10,7 +10,6 @@ from src.document import Document
 from src.translate import translate, handle_header
 
 
-
 def init_document() -> Document:
     """Initialize document object
 
@@ -44,25 +43,23 @@ def handle_special_key_words(doc, file, line, word) -> str:
     next_line = line
     temp = next_line
     break_point = "END-" + word
-    
- 
+
     while True:
- 
         next_line = file.readline()
         clean_next_line = clean_line(line=next_line)
+        temp += " <br /> " + clean_line(line=next_line)
         if word == "MOVE":
             if clean_next_line.strip() == "":
                 continue
             elif clean_next_line.startswith("TO"):
-                temp += " " +clean_next_line
+                temp += " " + clean_next_line
             elif not clean_next_line.startswith("MOVE"):
                 break
-            temp += " <br /> " + clean_line(line=next_line)
-            
+            translate(doc=doc, word=word, line=temp)
+            temp = clean_line(next_line)
         elif break_point in next_line:
             break
-    translate(doc=doc, word=word, line=temp)
-    temp = clean_line(next_line)
+
     return temp
 
 

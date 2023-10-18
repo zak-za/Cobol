@@ -22,8 +22,6 @@ def main(file_path, doc):
     """
 
     procedure_division = get_procedure_division(file_path=file_path)
-    #tmp=[["phrase","1"],["gaga","2"],["papap","3"]]
-    #doc.add_table(data=tmp, rows=len(tmp), cols=2)
 
     with open(file_path, mode="r", encoding=ENCODING) as file:
         while True:
@@ -40,7 +38,7 @@ def main(file_path, doc):
                     # -------------- handle headers
                     if word in procedure_division:
                         doc.add_paragraphe(handle_header(line))
-                        #print(f"------------------ {line}")
+                        # print(f"------------------ {line}")
                     # --------------- handle others
                     else:
                         if is_key_word(word=word):
@@ -48,7 +46,7 @@ def main(file_path, doc):
                                 line = handle_special_key_words(
                                     doc=doc, file=file, line=line, word=word
                                 )
-                            #print('what :'+f"{line}")
+                            # print(f"{line}")
                             word = line.split()[0]
                             translate(doc=doc, word=word, line=line)
             except Exception as ex:
